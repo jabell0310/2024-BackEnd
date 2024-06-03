@@ -1,7 +1,14 @@
 package com.example.demo.domain;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@NoArgsConstructor
+@Getter
+@Setter
 public class Article {
 
     private Long id;
@@ -47,39 +54,5 @@ public class Article {
         this.modifiedAt = LocalDateTime.now();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public void setModifiedAt(LocalDateTime modifiedAt) {
-        this.modifiedAt = modifiedAt;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Long getAuthorId() {
-        return authorId;
-    }
-
-    public Long getBoardId() {
-        return boardId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getModifiedAt() {
-        return modifiedAt;
-    }
 }

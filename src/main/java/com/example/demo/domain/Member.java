@@ -1,5 +1,13 @@
 package com.example.demo.domain;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+
+@NoArgsConstructor
+@Getter
+@Setter
 public class Member {
 
     private Long id;
@@ -25,23 +33,4 @@ public class Member {
         this.email = email;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
 }
