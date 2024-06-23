@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 @Getter
 public class ErrorResponse {
     private final LocalDateTime timeStamp = LocalDateTime.now();
-    private final int status;
-    private final String code;
+    private final int code;
+    private final String status;
     private final String message;
 
     public ErrorResponse(ErrorCode errorCode) {

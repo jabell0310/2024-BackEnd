@@ -18,11 +18,11 @@ public enum ErrorCode {
     BOARD_ARTICLE_EXIST(400, "BAD REQUEST", "게시판에 작성된 게시물이 존재합니다."),
     MEMBER_ARTICLE_EXIST(400, "BAD REQUEST", "사용자가 작성한 게시물이 존재합니다.");
 
-    private final int status;
-    private final String code;
+    private final int code;
+    private final String status;
     private final String message;
 
-    ErrorCode(int status, String code, String message) {
+    ErrorCode(int code, String status, String message) {
         this.status = status;
         this.code = code;
         this.message = message;
