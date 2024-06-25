@@ -1,13 +1,11 @@
 package com.example.demo.repository;
 
-import java.sql.PreparedStatement;
 import java.util.List;
 
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.domain.Article;
@@ -15,99 +13,57 @@ import com.example.demo.domain.Article;
 @Repository
 public class ArticleRepositoryJdbc implements ArticleRepository {
 
-    private final JdbcTemplate jdbcTemplate;
-
-    public ArticleRepositoryJdbc(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    private static final RowMapper<Article> articleRowMapper = (rs, rowNum) -> new Article(
-        rs.getLong("id"),
-        rs.getLong("author_id"),
-        rs.getLong("board_id"),
-        rs.getString("title"),
-        rs.getString("content"),
-        rs.getTimestamp("created_date").toLocalDateTime(),
-        rs.getTimestamp("modified_date").toLocalDateTime()
-    );
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
-    public List<Article> findAll() {
-        return jdbcTemplate.query("""
-            SELECT id,  board_id,  author_id,  title,  content,  created_date,  modified_date
-            FROM article
-            """, articleRowMapper);
-    }
-
-    @Override
-    public List<Article> findAllByBoardId(Long boardId) {
-        return jdbcTemplate.query("""
-            SELECT id,  board_id,  author_id,  title,  content,  created_date,  modified_date
-            FROM article
-            WHERE board_id = ?
-            """, articleRowMapper, boardId);
-    }
-
-    @Override
-    public List<Article> findAllByMemberId(Long memberId) {
-        return jdbcTemplate.query("""
-            SELECT id,  board_id,  author_id,  title,  content,  created_date,  modified_date
-            FROM article
-            WHERE author_id = ?
-            """, articleRowMapper, memberId);
-    }
-
-    @Override
-    public Article findById(Long id) {
-        try {
-            return jdbcTemplate.queryForObject("""
-            SELECT id,  board_id,  author_id,  title,  content,  created_date,  modified_date
-            FROM article
-            WHERE id = ?
-            """, articleRowMapper, id);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
-    @Override
+    @Transactional
     public Article insert(Article article) {
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(con -> {
-            PreparedStatement ps = con.prepareStatement("""
-                    INSERT INTO article (board_id, author_id, title, content)
-                    VALUES (?, ?, ?, ?)
-                    """,
-                new String[]{"id"});
-            ps.setLong(1, article.getBoardId());
-            ps.setLong(2, article.getAuthorId());
-            ps.setString(3, article.getTitle());
-            ps.setString(4, article.getContent());
-            return ps;
-        }, keyHolder);
-        return findById(keyHolder.getKey().longValue());
+        em.persist(article);
+        return article;
     }
 
     @Override
+    @Transactional
+    public List<Article> findAll() {
+        String jpql = "SELECT a FROM Article a";
+        return em.createQuery(jpql, Article.class).getResultList();
+    }
+
+    @Override
+    @Transactional
+    public List<Article> findAllByBoardId(Long boardId) {
+        String jpql = "SELECT a FROM Article a WHERE a.boardId = :boardId";
+        return em.createQuery(jpql, Article.class)
+                .setParameter("boardId", boardId)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional
+    public List<Article> findAllByMemberId(Long memberId) {
+        String jpql = "SELECT a FROM Article a WHERE a.authorId = :memberId";
+        return em.createQuery(jpql, Article.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional
+    public Article findById(Long id) {
+        return em.find(Article.class, id);
+    }
+
+    @Override
+    @Transactional
     public Article update(Article article) {
-        jdbcTemplate.update("""
-                UPDATE article
-                SET board_id = ?, title = ?, content = ?
-                WHERE id = ?
-                """,
-            article.getBoardId(),
-            article.getTitle(),
-            article.getContent(),
-            article.getId()
-        );
-        return findById(article.getId());
+        em.merge(article);
+        return article;
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
-        jdbcTemplate.update("""
-            DELETE FROM article
-            WHERE id = ?
-            """, id);
+        em.remove(findById(id));
     }
 }
