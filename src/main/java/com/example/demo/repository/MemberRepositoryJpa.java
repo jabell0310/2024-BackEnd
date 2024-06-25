@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.domain.Member;
 
 @Repository
-public class MemberRepositoryJdbc implements MemberRepository {
+public class MemberRepositoryJpa implements MemberRepository {
 
     @PersistenceContext
     private EntityManager em;
