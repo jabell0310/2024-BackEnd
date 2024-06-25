@@ -4,3 +4,11 @@ spring:
     username: root # 본인의 환경에 맞게 수정한다.
     password: jabell0310 # 본인의 환경에 맞게 수정한다.
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+
