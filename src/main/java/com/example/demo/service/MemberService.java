@@ -6,12 +6,14 @@ import java.util.Objects;
 import com.example.demo.domain.Article;
 import com.example.demo.exception.*;
 import com.example.demo.repository.ArticleRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.controller.dto.request.MemberCreateRequest;
 import com.example.demo.controller.dto.request.MemberUpdateRequest;
 import com.example.demo.controller.dto.response.MemberResponse;
+
 import com.example.demo.domain.Member;
 import com.example.demo.repository.MemberRepository;
 
@@ -28,11 +30,7 @@ public class MemberService {
     }
 
     public MemberResponse getById(Long id) {
-        Member member = memberRepository.findById(id);
-
-        if (member == null) {
-            throw new MemberNotFoundException();
-        }
+        Member member = memberRepository.findById(id).orElseThrow(MemberNotFoundException::new);
         return MemberResponse.from(member);
     }
 
@@ -45,7 +43,7 @@ public class MemberService {
 
     @Transactional
     public MemberResponse create(MemberCreateRequest request) {
-        Member member = memberRepository.insert(
+        Member member = memberRepository.save(
             new Member(request.name(), request.email(), request.password())
         );
 
@@ -69,11 +67,7 @@ public class MemberService {
 
     @Transactional
     public MemberResponse update(Long id, MemberUpdateRequest request) {
-        Member member = memberRepository.findById(id);
-
-        if (member == null) {
-            throw new MemberNotExistException();
-        }
+        Member member = memberRepository.findById(id).orElseThrow(MemberNotExistException::new);
 
         boolean emailExists = memberRepository.findAll().stream()
                 .anyMatch(m -> member.getEmail().equals(m.getEmail()));
@@ -83,7 +77,7 @@ public class MemberService {
         }
 
         member.update(request.name(), request.email());
-        memberRepository.update(member);
+        memberRepository.save(member);
         return MemberResponse.from(member);
     }
 }

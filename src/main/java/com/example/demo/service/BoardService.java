@@ -4,17 +4,21 @@ import java.util.List;
 import java.util.Objects;
 
 import com.example.demo.domain.Article;
+
 import com.example.demo.exception.BoardHasArticleException;
 import com.example.demo.exception.BoardNotExistException;
 import com.example.demo.exception.BoardNotFoundException;
 import com.example.demo.exception.RequestNullExistException;
+
 import com.example.demo.repository.ArticleRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.controller.dto.request.BoardCreateRequest;
 import com.example.demo.controller.dto.request.BoardUpdateRequest;
 import com.example.demo.controller.dto.response.BoardResponse;
+
 import com.example.demo.domain.Board;
 import com.example.demo.repository.BoardRepository;
 
@@ -37,12 +41,7 @@ public class BoardService {
     }
 
     public BoardResponse getBoardById(Long id) {
-        Board board = boardRepository.findById(id);
-
-        if(board == null) {
-            throw new BoardNotFoundException();
-        }
-
+        Board board = boardRepository.findById(id).orElseThrow(BoardNotFoundException::new);
         return BoardResponse.from(board);
     }
 
@@ -54,7 +53,7 @@ public class BoardService {
             throw new RequestNullExistException();
         }
 
-        Board saved = boardRepository.insert(board);
+        Board saved = boardRepository.save(board);
         return BoardResponse.from(saved);
     }
 
@@ -72,14 +71,10 @@ public class BoardService {
 
     @Transactional
     public BoardResponse update(Long id, BoardUpdateRequest request) {
-        Board board = boardRepository.findById(id);
-
-        if (board == null) {
-            throw new BoardNotExistException();
-        }
+        Board board = boardRepository.findById(id).orElseThrow(BoardNotExistException::new);
 
         board.update(request.name());
-        Board updated = boardRepository.update(board);
+        Board updated = boardRepository.save(board);
         return BoardResponse.from(updated);
     }
 }
