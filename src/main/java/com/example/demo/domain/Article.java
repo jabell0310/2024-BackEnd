@@ -37,6 +37,10 @@ public class Article {
     @Column(name = "modified_date")
     private LocalDateTime modifiedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", insertable = false, updatable = false)
+    private Board board;
+
     public Article(
         Long id,
         Long authorId,
