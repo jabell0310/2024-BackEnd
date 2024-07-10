@@ -7,6 +7,7 @@ import com.example.demo.domain.Article;
 import com.example.demo.exception.*;
 import com.example.demo.repository.ArticleRepository;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +24,12 @@ public class MemberService {
 
     private final ArticleRepository articleRepository;
     private final MemberRepository memberRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public MemberService(ArticleRepository articleRepository, MemberRepository memberRepository) {
+    public MemberService(ArticleRepository articleRepository, MemberRepository memberRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.articleRepository = articleRepository;
         this.memberRepository = memberRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public MemberResponse getById(Long id) {
@@ -43,13 +46,20 @@ public class MemberService {
 
     @Transactional
     public MemberResponse create(MemberCreateRequest request) {
-        Member member = memberRepository.save(
-            new Member(request.name(), request.email(), request.password())
-        );
-
-        if (member.getName() == null || member.getEmail() == null || member.getPassword() == null) {
+        if (request.name() == null || request.email() == null || request.password() == null) {
             throw new RequestNullExistException();
         }
+
+        boolean emailExists = memberRepository.existsByEmail(request.email());
+
+        if (emailExists) {
+            throw new AlreadyHasEmailException();
+        }
+
+        Member member = memberRepository.save(
+            new Member(request.name(), request.email(), bCryptPasswordEncoder.encode(request.password()), "ROLE_ADMIN")
+        );
+
         return MemberResponse.from(member);
     }
 
@@ -69,8 +79,7 @@ public class MemberService {
     public MemberResponse update(Long id, MemberUpdateRequest request) {
         Member member = memberRepository.findById(id).orElseThrow(MemberNotExistException::new);
 
-        boolean emailExists = memberRepository.findAll().stream()
-                .anyMatch(m -> member.getEmail().equals(m.getEmail()));
+        boolean emailExists = memberRepository.existsByEmail(request.email());
 
         if (emailExists) {
             throw new AlreadyHasEmailException();

@@ -11,4 +11,5 @@ spring:
 
     show-sql: true
 
-
+  session:
+    timeout: 1800s
